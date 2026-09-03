@@ -1,0 +1,215 @@
+{-# START_FILE package.yaml #-}
+name:               {{name}}
+version:            0.1.0.0
+license:            MIT
+author:             {{author-name}}{{^author-name}}Author name here{{/author-name}}
+maintainer:         {{author-email}}{{^author-email}}example@example.com{{/author-email}}
+copyright:          {{copyright}}{{^copyright}}{{year}}{{^year}}2026{{/year}} {{author-name}}{{^author-name}}Author name here{{/author-name}}{{/copyright}} 
+github:             {{github-username}}{{^github-username}}<unavailable>{{/github-username}}/{{name}}
+
+extra-source-files:
+- CHANGELOG.md
+- README.md
+
+description:        Please see the README.md
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- utf8-string
+- unicode-show
+- time
+- hspec
+- main-tester
+- doctest
+
+language: GHC2024
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  {{name}}:
+    main:               Main.hs
+    source-dirs:        app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - {{name}}
+
+tests:
+  {{name}}-spec:
+    main:               spec.hs
+    source-dirs:        test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - {{name}}
+    - hspec
+    - main-tester
+
+  {{name}}-doctest:
+    main:               doctests.hs
+    source-dirs:        test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - {{name}}
+    - doctest
+
+{-# START_FILE Setup.hs #-}
+import Distribution.Simple
+main = defaultMain
+
+{-# START_FILE app/Main.hs #-}
+module Main 
+    ( main
+    ) where
+
+import Lib
+
+main :: IO ()
+main = someFunc
+
+{-# START_FILE src/Lib.hs #-}
+module Lib
+    ( someFunc
+    ) where
+
+{- |
+>>> someFunc
+someFunc
+-}
+someFunc :: IO ()
+someFunc = putStrLn "someFunc"
+
+{-# START_FILE test/spec.hs #-}
+{-# OPTIONS -F -pgmF hspec-discover #-}
+
+{-# START_FILE test/LibSpec.hs #-}
+{-# LANGUAGE OverloadedStrings #-}
+module LibSpec
+    ( spec
+    ) where
+
+import Data.String
+import qualified Codec.Binary.UTF8.String as U
+import qualified Data.ByteString as B
+import Test.Main
+import Test.Hspec
+import Text.Show.Unicode
+
+import Lib
+
+newtype UString a = UString a deriving Eq
+
+ustring :: B.ByteString -> UString String
+ustring = UString . U.decode . B.unpack
+
+instance IsString a => IsString (UString a) where
+  fromString = UString . fromString
+
+instance Show a => Show (UString a) where
+  show (UString s) = ushow s
+
+spec :: Spec
+spec = describe "someFunc" $ do
+  { it "someFuncを標準出力に印字する." $ do
+    { result <- captureProcessResult Lib.someFunc
+    ; prExitCode result `shouldBe` ExitSuccess
+    ; prStderr result `shouldSatisfy` B.null
+    ; ustring (prStdout result) `shouldBe` "someFunc\n"
+    }
+  }
+
+{-# START_FILE test/doctests.hs #-}
+module Main
+    ( main
+    ) where
+
+import Test.DocTest
+
+main :: IO ()
+main = doctest ["src/Lib.hs"]
+
+{-# START_FILE README.md #-}
+# {{name}}
+
+{-# START_FILE CHANGELOG.md #-}
+# Changelog for {{name}}
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to the
+[Haskell Package Versioning Policy](https://pvp.haskell.org/).
+
+## Unreleased
+
+## 0.1.0.0 - YYYY-MM-DD
+
+{-# START_FILE LICENSE #-}
+The MIT License (MIT)
+
+Copyright (c) {{copyright}}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Softwar
+e without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to p
+ermit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICU
+LAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT
+, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+{-# START_FILE stack.yaml #-}
+snapshot: lts-24.57
+
+packages:
+- .
+
+{-# START_FILE .gitignore #-}
+dist
+dist-*
+cabal-dev
+*~
+*.o
+*.hi
+*.hie
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+*.eventlog
+.stack-work/
+dist-new/
+cabal.project.local
+.HTF/
+
+*.cabal
+

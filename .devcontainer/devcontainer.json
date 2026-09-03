@@ -1,0 +1,33 @@
+{
+	"name": "Haskell Programming Environment",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			// "username": "${localEnv:USER}",
+			// "userUid": "${localEnv:UID}",
+			// "userGid": "${localEnv:GID}"
+		},
+		"ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {}
+	},
+	"runArgs": ["--env-file", ".devcontainer/.env"],
+	"remoteEnv": {
+		"PATH": "/home/${localEnv:USER}/.local/bin:/home/${localEnv:USER}/.ghcup/bin:${containerEnv:PATH}"
+	},
+	"containerEnv": {
+		"BOOTSTRAP_HASKELL_NONINTERACTIVE": "1",
+		"WORKSPACE_DIR": "${containerWorkspaceFolder}"
+	},
+	"onCreateCommand": "bash .devcontainer/on-create.sh",
+	"postCreateCommand": "bash .devcontainer/post-create.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"haskell.haskell",
+				"haskell.language-haskell"
+			]
+		}
+	},
+	"remoteUser": "${localEnv:USER}"
+}
